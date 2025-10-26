@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debris Detection & Dispatch System</title>
+    <!-- Load Tailwind CSS from CDN for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .card { background-color: white; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); padding: 1.5rem; }
+        .report-item { border-bottom: 1px dashed #e5e7eb; padding-bottom: 1rem; margin-bottom: 1rem; }
+        .report-item:last-child { border-bottom: none; }
+        /* Style for the temporary alert message box */
+        #alert-box {
+            position: fixed; top: 10px; right: 10px; z-index: 1000;
+            padding: 10px 20px; border-radius: 5px; color: white;
+            display: none; transition: opacity 0.5s;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans p-4 md:p-8">
+
+    <!-- Global Alert Box -->
+    <div id="alert-box" class="shadow-lg"></div>
+
+    <div id="auth-view" class="flex items-center justify-center min-h-screen">
+        <div class="card w-full max-w-md">
+            <h1 class="text-3xl font-bold text-gray-800 text-center mb-6">Debris Dispatch Login</h1>
+            
+            <form id="auth-form" class="space-y-4">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                    <input type="text" id="username" name="username" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="password" name="password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </div>
+                <button type="submit" id="login-button" class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150">
+                    Log In
+                </button>
+            </form>
+            <p class="mt-4 text-center text-sm">
+                New User? 
+                <button id="switch-to-register" class="text-blue-600 hover:text-blue-800 font-medium transition-colors duration-150">Register Here</button>
+            </p>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD VIEW (Initially hidden) -->
+    <div id="dashboard-view" class="hidden">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Debris Detection & Dispatch System</h1>
+            <div class="flex items-center space-x-4">
+                <span id="user-info" class="text-gray-600 text-sm"></span>
+                <button id="logout-button" class="text-sm font-medium text-red-600 hover:text-red-800">Logout</button>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- LEFT COLUMN: DEBRIS REPORTS -->
+            <div class="lg:col-span-2">
+                <div class="card">
+                    <h2 class="text-xl font-semibold mb-4 border-b pb-2">Debris Reports</h2>
+                    <div id="reports-container">
+                        <!-- Reports will be inserted here -->
+                        <p class="text-gray-500">Loading reports...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: SIMULATE/DRONES -->
+            <div class="space-y-6">
+
+                <!-- Simulate Drone Report Card -->
+                <div class="card">
+                    <h2 class="text-xl font-semibold mb-4 border-b pb-2">Simulate Drone Report (<span id="admin-notice" class="text-red-500">Admin Only</span>)</h2>
+                    <form id="report-form" class="space-y-3">
+                        <div>
+                            <label for="site-id" class="block text-sm font-medium text-gray-700">Site ID (e.g., 201-204)</label>
+                            <input type="number" id="site-id" value="201" min="1" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                        </div>
+                        <div>
+                            <label for="drone-id" class="block text-sm font-medium text-gray-700">Detecting Drone (e.g., 401-403)</label>
+                            <input type="number" id="drone-id" value="401" min="401" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                        </div>
+                        <div>
+                            <label for="quantity" class="block text-sm font-medium text-gray-700">Est. Quantity (kg)</label>
+                            <input type="number" id="quantity" value="50" min="1" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                        </div>
+                        <div>
+                            <label for="coords" class="block text-sm font-medium text-gray-700">Location Coords (Lat,Lng)</label>
+                            <input type="text" id="coords" value="19.1297,-72.8435" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                        </div>
+                        <button type="submit" id="create-report-button" class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-150">
+                            Create New Report
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Drone Fleet Status Card -->
+                <div class="card">
+                    <h2 class="text-xl font-semibold mb-4 border-b pb-2">Drone Fleet Status</h2>
+                    <div id="drone-container">
+                        <!-- Drones will be inserted here -->
+                        <p class="text-gray-500">Loading drones...</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Link Frontend Logic -->
+    <script src="app.js"></script>
+</body>
+</html>
